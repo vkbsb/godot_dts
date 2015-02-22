@@ -9,6 +9,7 @@ var btnDown = false
 var scoreLabel
 var gameScore = 0
 var birdAnim
+var particleSystem
 
 func _ready():
 	# Initalization here
@@ -17,6 +18,7 @@ func _ready():
 	sprNode = get_node(NodePath("Sprite"))
 	scoreLabel = get_node("../ScoreLabel")
 	scoreLabel.hide()
+	particleSystem = get_node("Sprite/Trail")
 	
 	#cache the animation player for bird fly animations.
 	birdAnim = get_node("Sprite/BirdAnimations")
@@ -71,6 +73,9 @@ func _fixed_process(delta):
 #		
 	#if the game is over and the velocity of the object is very low we
 	#reset the game.
+	if get_linear_velocity().y > 0:
+		particleSystem.set_emitting(false)
+		
 	if gameOver == true \
 		and abs(get_linear_velocity().x) < 1 \
 		and abs(get_linear_velocity().y) < 1:
@@ -101,6 +106,7 @@ func _input(event):
 		if btnDown == true:
 			birdAnim.play("up")
 			impulse_based_solution()
+			particleSystem.set_emitting(true)
 		
 func _on_Player_body_enter( body ):
 	if gameOver:
@@ -115,6 +121,7 @@ func _on_Player_body_enter( body ):
 		gameScore += 1
 		scoreLabel.set_text(str(gameScore))
 		emit_signal("ScoreChanged", gameScore)
+		particleSystem.set_pos(Vector2(-15, 1))
 		pass
 	elif name == "RightWall":
 		print("Turn Left")
@@ -124,6 +131,7 @@ func _on_Player_body_enter( body ):
 		gameScore += 1
 		scoreLabel.set_text(str(gameScore))
 		emit_signal("ScoreChanged", gameScore)
+		particleSystem.set_pos(Vector2(15, 1))
 		pass
 	elif name == "Roof" or name == "Floor" or body.get_groups().find("Spike") > -1:
 		set_mode(RigidBody2D.MODE_RIGID)
